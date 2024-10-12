@@ -3,6 +3,7 @@
 #include <string>
 
 #include <clap/all.h>
+#include <clap/ext/draft/scratch-memory.h>
 
 #include "version-check.hh"
 
@@ -107,6 +108,11 @@ namespace clap { namespace helpers {
       virtual bool implementsThreadPool() const noexcept { return false; }
       virtual bool threadPoolRequestExec(uint32_t numTasks) noexcept { return false; }
 
+      // clap_host_scratch_memory
+      virtual bool implementsScratchMemory() const noexcept { return false; }
+      virtual bool scratchMemoryRequestSize(size_t bytesRequested) noexcept;
+      virtual void *scratchMemoryAccess() noexcept;
+
       /////////////////////
       // Thread Checking //
       /////////////////////
@@ -186,6 +192,11 @@ namespace clap { namespace helpers {
       // clap_host_thread_pool
       static bool clapThreadPoolRequestExec(const clap_host *host, uint32_t num_tasks) noexcept;
 
+      // clap_host_scratch_memory
+      static bool clapScratchMemoryRequestSize(const clap_host *host,
+                                               size_t bytesRequested) noexcept;
+      static void *clapScratchMemoryAccess(const clap_host *host) noexcept;
+
       // interfaces
       static const clap_host_audio_ports _hostAudioPorts;
       static const clap_host_gui _hostGui;
@@ -199,5 +210,6 @@ namespace clap { namespace helpers {
       static const clap_host_tail _hostTail;
       static const clap_host_thread_check _hostThreadCheck;
       static const clap_host_thread_pool _hostThreadPool;
+      static const clap_host_scratch_memory _hostScratchMemory;
    };
 }} // namespace clap::helpers

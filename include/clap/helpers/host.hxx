@@ -80,6 +80,12 @@ namespace clap { namespace helpers {
    };
 
    template <MisbehaviourHandler h, CheckingLevel l>
+   const clap_host_scratch_memory Host<h, l>::_hostScratchMemory = {
+      clapScratchMemoryRequestSize,
+      clapScratchMemoryAccess,
+   };
+
+   template <MisbehaviourHandler h, CheckingLevel l>
    Host<h, l>::Host(const char *name, const char *vendor, const char *url, const char *version)
       : _host{
            CLAP_VERSION,
@@ -156,6 +162,8 @@ namespace clap { namespace helpers {
          return &_hostThreadCheck;
       if (!strcmp(extension_id, CLAP_EXT_THREAD_POOL) && self.implementsThreadPool())
          return &_hostThreadPool;
+      if (!strcmp(extension_id, CLAP_EXT_SCRATCH_MEMORY) && self.implementsScratchMemory())
+         return &_hostScratchMemory;
 
       if (self.enableDraftExtensions()) {
          // put draft ext here
@@ -392,6 +400,23 @@ namespace clap { namespace helpers {
       return self.threadPoolRequestExec(num_tasks);
    }
 
+   //--------------------------//
+   // clap_host_scratch_memory //
+   //--------------------------//
+   template <MisbehaviourHandler h, CheckingLevel l>
+   bool Host<h, l>::clapScratchMemoryRequestSize(const clap_host *host, size_t bytesRequested) noexcept {
+      auto &self = from(host);
+      self.ensureMainThread("scratch_memory.request_size");
+      return self.scratchMemoryRequestSize(bytesRequested);
+   }
+
+   template <MisbehaviourHandler h, CheckingLevel l>
+   void *Host<h, l>::clapScratchMemoryAccess(const clap_host *host) noexcept {
+      auto &self = from(host);
+      self.ensureAudioThread("scratch_memory.access");
+      return self.scratchMemoryAccess();
+   }
+
    /////////////////////
    // Thread Checking //
    /////////////////////
@@ -429,19 +454,21 @@ namespace clap { namespace helpers {
    template <MisbehaviourHandler h, CheckingLevel l>
    Host<h, l> &Host<h, l>::from(const clap_host *host) noexcept {
       if (l >= CheckingLevel::Minimal) {
-         if (!host) CLAP_HELPERS_UNLIKELY {
-            std::cerr << "Passed an null host pointer" << std::endl;
-            std::terminate();
-         }
+         if (!host)
+            CLAP_HELPERS_UNLIKELY {
+               std::cerr << "Passed an null host pointer" << std::endl;
+               std::terminate();
+            }
       }
 
       auto self = static_cast<Host *>(host->host_data);
       if (l >= CheckingLevel::Minimal) {
-         if (!self) CLAP_HELPERS_UNLIKELY {
-            std::cerr << "Passed an invalid host pointer because the host_data is null"
-                      << std::endl;
-            std::terminate();
-         }
+         if (!self)
+            CLAP_HELPERS_UNLIKELY {
+               std::cerr << "Passed an invalid host pointer because the host_data is null"
+                         << std::endl;
+               std::terminate();
+            }
       }
 
       return *self;

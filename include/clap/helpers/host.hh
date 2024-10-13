@@ -110,8 +110,8 @@ namespace clap { namespace helpers {
 
       // clap_host_scratch_memory
       virtual bool implementsScratchMemory() const noexcept { return false; }
-      virtual bool scratchMemoryRequestSize(size_t bytesRequested) noexcept;
-      virtual void *scratchMemoryAccess() noexcept;
+      virtual bool scratchMemoryRequestSize(size_t bytesRequested) noexcept { return false; }
+      virtual void *scratchMemoryAccess() noexcept { return nullptr; }
 
       /////////////////////
       // Thread Checking //

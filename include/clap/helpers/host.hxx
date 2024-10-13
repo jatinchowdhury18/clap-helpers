@@ -454,21 +454,19 @@ namespace clap { namespace helpers {
    template <MisbehaviourHandler h, CheckingLevel l>
    Host<h, l> &Host<h, l>::from(const clap_host *host) noexcept {
       if (l >= CheckingLevel::Minimal) {
-         if (!host)
-            CLAP_HELPERS_UNLIKELY {
-               std::cerr << "Passed an null host pointer" << std::endl;
-               std::terminate();
-            }
+         if (!host) CLAP_HELPERS_UNLIKELY {
+            std::cerr << "Passed an null host pointer" << std::endl;
+            std::terminate();
+         }
       }
 
       auto self = static_cast<Host *>(host->host_data);
       if (l >= CheckingLevel::Minimal) {
-         if (!self)
-            CLAP_HELPERS_UNLIKELY {
-               std::cerr << "Passed an invalid host pointer because the host_data is null"
-                         << std::endl;
-               std::terminate();
-            }
+         if (!self) CLAP_HELPERS_UNLIKELY {
+            std::cerr << "Passed an invalid host pointer because the host_data is null"
+                      << std::endl;
+            std::terminate();
+         }
       }
 
       return *self;
